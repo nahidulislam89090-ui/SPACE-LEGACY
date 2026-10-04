@@ -35,4 +35,4 @@ Keyboard nav and focus rings, alt text, glossary tooltips on every technical ter
 ## Log in and theme (added)
 - `/login` page: sign up / log in with email + password (Lovable Cloud). Signed-in explorers get their quiz scores, badges, and certificate name saved to their account; guests can still explore everything, with progress kept on this device only.
 - A small explorer profile (display name for the certificate) is stored per user.
-- Light / dark mode switch in the header, remembered per device. Dark "deep space" stays the default; light mode is a warm "lunar daylight" palette using the same accent colors.
+- Light / dark mode switch in the header of every page (including log-in), applied across the whole app and remembered per device. Dark "deep space" stays the default; light mode is a warm "lunar daylight" palette using the same accent colors.
