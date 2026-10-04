@@ -1,0 +1,21 @@
+// Plain-word definitions shown in tap/hover tooltips. Use [[key|text]] in content strings.
+export const glossary: Record<string, { term: string; definition: string }> = {
+  rover: { term: "Rover", definition: "A robot car that drives around on another world to explore it." },
+  lander: { term: "Lander", definition: "A spacecraft that lands on a world and stays in one spot." },
+  orbit: { term: "Orbit", definition: "The curved path an object takes as it goes around a planet or star." },
+  solar: { term: "Solar panel", definition: "A flat panel that turns sunlight into electricity." },
+  seismometer: { term: "Seismometer", definition: "A super-sensitive tool that feels the ground shake, like during a quake." },
+  interstellar: { term: "Interstellar space", definition: "The space between the stars, outside the bubble of wind that comes from our Sun." },
+  retroreflector: { term: "Retroreflector", definition: "A special mirror that bounces light straight back to where it came from." },
+  sol: { term: "Sol", definition: "One day on Mars. It is about 40 minutes longer than a day on Earth." },
+  radio: { term: "Radio signal", definition: "An invisible wave of energy that carries messages. It travels at the speed of light." },
+  hematite: { term: "Hematite", definition: "A mineral made of iron. On Earth it often forms in water." },
+  regolith: { term: "Regolith", definition: "The loose dust and broken rock that covers the surface of the Moon or Mars." },
+  descent: { term: "Descent stage", definition: "The bottom half of the Apollo lander. It had the legs and the landing engine." },
+  flyby: { term: "Flyby", definition: "When a spacecraft zooms past a planet to study it without stopping." },
+  rtg: { term: "Nuclear battery (RTG)", definition: "A power source that makes electricity from the heat of slowly decaying material. It works far from the Sun." },
+  laser: { term: "Laser", definition: "A very narrow, focused beam of light." },
+  marsquake: { term: "Marsquake", definition: "An earthquake that happens on Mars." },
+  core: { term: "Core", definition: "The center of a planet, usually made of metal." },
+  atmosphere: { term: "Atmosphere", definition: "The layer of gases around a planet. Mars has a very thin one." },
+};
