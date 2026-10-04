@@ -31,3 +31,8 @@ Keyboard nav and focus rings, alt text, glossary tooltips on every technical ter
 - Each route has its own SEO metadata.
 - README with run/build/deploy notes + a "How this project meets the challenge" section.
 - After building: checklist of facts, image credits, and mission statuses to verify manually.
+
+## Log in and theme (added)
+- `/login` page: sign up / log in with email + password (Lovable Cloud). Signed-in explorers get their quiz scores, badges, and certificate name saved to their account; guests can still explore everything, with progress kept on this device only.
+- A small explorer profile (display name for the certificate) is stored per user.
+- Light / dark mode switch in the header, remembered per device. Dark "deep space" stays the default; light mode is a warm "lunar daylight" palette using the same accent colors.
