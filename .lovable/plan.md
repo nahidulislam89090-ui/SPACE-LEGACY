@@ -1,6 +1,6 @@
 # Abandoned but Not Forgotten — Build Plan
 
-"The Museum with No Roof": an interactive storybook + museum about NASA hardware left on the Moon, Mars, and in deep space, for ages 8–14 and their teachers.
+"SPACE LEGACY": an interactive storybook + museum about NASA hardware left on the Moon, Mars, and in deep space, for ages 8–14 and their teachers.
 
 ## Pages
 - `/` Landing: starfield hero, title, one-line pitch, "Start exploring".
