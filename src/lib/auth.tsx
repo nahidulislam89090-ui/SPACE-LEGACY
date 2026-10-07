@@ -54,7 +54,11 @@ async function hashPassword(password: string): Promise<string> {
       // Fallback
     }
   }
-  return btoa(password);
+  try {
+    return btoa(unescape(encodeURIComponent(password + "_space_legacy_salt")));
+  } catch {
+    return btoa(password);
+  }
 }
 
 function getLocalAccounts(): Record<string, LocalAccount> {
@@ -133,6 +137,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(localUser);
       setIsLocalMode(true);
       setLoading(false);
+    } else {
+      // If no stored local session and no Supabase token in storage, resolve loading immediately
+      const hasSupabaseToken =
+        typeof window !== "undefined" &&
+        Object.keys(window.localStorage || {}).some((k) => k.includes("-auth-token"));
+      if (!hasSupabaseToken) {
+        setLoading(false);
+      }
     }
 
     // Supabase auth state change subscription
@@ -144,9 +156,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(session.user);
           setIsLocalMode(false);
           safeRemove(LOCAL_SESSION_KEY);
-        } else if (!localUser) {
-          setUser(null);
-          setIsLocalMode(false);
+        } else {
+          // If Supabase session is null, preserve active local user session if present
+          const currentLocal = getStoredLocalSession();
+          if (currentLocal) {
+            setUser(currentLocal);
+            setIsLocalMode(true);
+          } else {
+            setUser(null);
+            setIsLocalMode(false);
+          }
         }
         setLoading(false);
       });
@@ -157,7 +176,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Supabase getUser check with short timeout to prevent blocking on dead endpoints
     const timeout = new Promise<{ data: { user: null } }>((resolve) =>
-      setTimeout(() => resolve({ data: { user: null } }), 2000)
+      setTimeout(() => resolve({ data: { user: null } }), 1200)
     );
 
     Promise.race([
@@ -170,6 +189,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(data.user);
           setIsLocalMode(false);
           safeRemove(LOCAL_SESSION_KEY);
+        } else {
+          const currentLocal = getStoredLocalSession();
+          if (currentLocal) {
+            setUser(currentLocal);
+            setIsLocalMode(true);
+          }
         }
         setLoading(false);
       })
@@ -196,34 +221,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const cachedAvatar = safeGet(`space-legacy-avatar-${user.id}`);
     if (cachedAvatar) {
       setAvatarState(cachedAvatar as AvatarKey);
+    } else {
+      const accounts = getLocalAccounts();
+      const accountKey = user.email?.toLowerCase();
+      if (accountKey && accounts[accountKey]?.avatar) {
+        setAvatarState(accounts[accountKey].avatar);
+      }
     }
 
-    // If online Supabase is available, sync avatar
-    (async () => {
-      try {
-        const { data } = await supabase
-          .from("explorer_profiles")
-          .select("avatar")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        if (data?.avatar) {
-          setAvatarState(data.avatar as AvatarKey);
-          safeSet(`space-legacy-avatar-${user.id}`, data.avatar);
+    // If online Supabase is available and not in local mode, sync avatar
+    if (!isLocalMode && !user.id.startsWith("local-") && !user.id.startsWith("guest-")) {
+      (async () => {
+        try {
+          const { data } = await supabase
+            .from("explorer_profiles")
+            .select("avatar")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          if (data?.avatar) {
+            setAvatarState(data.avatar as AvatarKey);
+            safeSet(`space-legacy-avatar-${user.id}`, data.avatar);
+          }
+        } catch {
+          // Offline / local fallback
         }
-      } catch {
-        // Offline / local fallback
-      }
-    })();
-  }, [user]);
+      })();
+    }
+  }, [user, isLocalMode]);
 
   const signIn = useCallback(
     async ({ email, password }: { email: string; password: string }): Promise<AuthResponse> => {
       const cleanEmail = email.trim().toLowerCase();
+      const accounts = getLocalAccounts();
+      const existing = accounts[cleanEmail];
+      const hashed = await hashPassword(password);
 
-      // 1. Attempt Supabase login first with a 3.5s timeout
+      // 1. If account already exists locally, authenticate immediately
+      if (existing) {
+        if (existing.passwordHash === hashed) {
+          const localUser = makeLocalUser(existing.id, cleanEmail, existing.createdAt);
+          safeSet(LOCAL_SESSION_KEY, JSON.stringify(localUser));
+          setUser(localUser);
+          setIsLocalMode(true);
+          if (existing.avatar) setAvatarState(existing.avatar);
+          return { success: true, isLocal: true };
+        } else {
+          return { success: false, error: "Incorrect password for this explorer account." };
+        }
+      }
+
+      // 2. Otherwise attempt Supabase login with a 1.5s timeout
       try {
         const timeoutPromise = new Promise<{ data: any; error: any }>((_, reject) =>
-          setTimeout(() => reject(new Error("NETWORK_TIMEOUT")), 3500)
+          setTimeout(() => reject(new Error("NETWORK_TIMEOUT")), 1500)
         );
 
         const { data, error } = await Promise.race([
@@ -238,54 +288,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return { success: true, isLocal: false };
         }
 
-        // If it's a legitimate auth failure from an active Supabase server (like wrong password or email unconfirmed)
-        if (
-          error &&
-          error.status !== 530 &&
-          !error.message?.includes("<none>") &&
-          error.name !== "AuthRetryableFetchError"
-        ) {
+        if (error?.message?.includes("Email not confirmed")) {
           return { success: false, error: error.message };
         }
       } catch (err) {
-        console.warn("[Auth] Supabase endpoint unreachable, checking local accounts.", err);
+        console.warn("[Auth] Supabase endpoint unreachable.", err);
       }
 
-      // 2. Check local accounts
-      const accounts = getLocalAccounts();
-      const existing = accounts[cleanEmail];
-      const hashed = await hashPassword(password);
-
-      if (existing) {
-        if (existing.passwordHash === hashed) {
-          const localUser = makeLocalUser(existing.id, cleanEmail, existing.createdAt);
-          safeSet(LOCAL_SESSION_KEY, JSON.stringify(localUser));
-          setUser(localUser);
-          setIsLocalMode(true);
-          if (existing.avatar) setAvatarState(existing.avatar);
-          return { success: true, isLocal: true };
-        } else {
-          return { success: false, error: "Incorrect password for this explorer account." };
-        }
-      }
-
-      // If user typed credentials when Supabase is offline/530 and no local account exists yet:
-      // Auto-register and sign in as local explorer!
-      const newId = "local-" + Math.random().toString(36).slice(2, 10);
-      const now = new Date().toISOString();
-      accounts[cleanEmail] = {
-        id: newId,
-        email: cleanEmail,
-        passwordHash: hashed,
-        createdAt: now,
-        avatar: "astronaut",
+      // 3. If account does not exist, do not auto-register: require explicit registration
+      return {
+        success: false,
+        error: "No explorer account found with this email. Please check your credentials or switch to 'Create one for free'.",
       };
-      saveLocalAccounts(accounts);
-      const localUser = makeLocalUser(newId, cleanEmail, now);
-      safeSet(LOCAL_SESSION_KEY, JSON.stringify(localUser));
-      setUser(localUser);
-      setIsLocalMode(true);
-      return { success: true, isLocal: true };
     },
     []
   );
@@ -293,11 +307,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = useCallback(
     async ({ email, password }: { email: string; password: string }): Promise<AuthResponse> => {
       const cleanEmail = email.trim().toLowerCase();
+      const accounts = getLocalAccounts();
+      const existing = accounts[cleanEmail];
+      const hashed = await hashPassword(password);
 
-      // 1. Try Supabase signUp with 3.5s timeout
+      // 1. If already exists locally
+      if (existing) {
+        if (existing.passwordHash === hashed) {
+          const localUser = makeLocalUser(existing.id, cleanEmail, existing.createdAt);
+          safeSet(LOCAL_SESSION_KEY, JSON.stringify(localUser));
+          setUser(localUser);
+          setIsLocalMode(true);
+          if (existing.avatar) setAvatarState(existing.avatar);
+          return { success: true, session: true, isLocal: true };
+        } else {
+          return {
+            success: false,
+            error: "An account with this email already exists. Please log in with your password.",
+          };
+        }
+      }
+
+      // 2. Try Supabase signUp with 1.5s timeout
       try {
         const timeoutPromise = new Promise<{ data: any; error: any }>((_, reject) =>
-          setTimeout(() => reject(new Error("NETWORK_TIMEOUT")), 3500)
+          setTimeout(() => reject(new Error("NETWORK_TIMEOUT")), 1500)
         );
 
         const { data, error } = await Promise.race([
@@ -313,7 +347,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return { success: true, session: true, isLocal: false };
           }
           if (data?.user) {
-            // Live Supabase requiring email confirmation
             return {
               success: true,
               session: false,
@@ -322,22 +355,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             };
           }
         }
-
-        if (
-          error &&
-          error.status !== 530 &&
-          !error.message?.includes("<none>") &&
-          error.name !== "AuthRetryableFetchError"
-        ) {
-          return { success: false, error: error.message };
-        }
       } catch (err) {
         console.warn("[Auth] Supabase endpoint unreachable, registering local account.", err);
       }
 
-      // 2. Create local explorer account
-      const accounts = getLocalAccounts();
-      const hashed = await hashPassword(password);
+      // 3. Create local explorer account
       const newId = "local-" + Math.random().toString(36).slice(2, 10);
       const now = new Date().toISOString();
 
@@ -398,14 +420,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           account.avatar = key;
           saveLocalAccounts(accounts);
         }
-        try {
-          void supabase.from("explorer_profiles").update({ avatar: key }).eq("user_id", user.id);
-        } catch {
-          // Ignore offline error
+        if (!isLocalMode && !user.id.startsWith("local-") && !user.id.startsWith("guest-")) {
+          try {
+            void supabase.from("explorer_profiles").update({ avatar: key }).eq("user_id", user.id);
+          } catch {
+            // Ignore offline error
+          }
         }
       }
     },
-    [user]
+    [user, isLocalMode]
   );
 
   const deleteAccount = useCallback(async () => {
@@ -417,21 +441,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       delete accounts[user.email.toLowerCase()];
       saveLocalAccounts(accounts);
     }
-    try {
-      await supabase.from("explorer_profiles").delete().eq("user_id", user.id);
-    } catch {
-      // Ignore
-    }
-    try {
-      await supabase.auth.signOut();
-    } catch {
-      // Ignore
+    if (!isLocalMode && !user.id.startsWith("local-") && !user.id.startsWith("guest-")) {
+      try {
+        await supabase.from("explorer_profiles").delete().eq("user_id", user.id);
+      } catch {
+        // Ignore
+      }
+      try {
+        await supabase.auth.signOut();
+      } catch {
+        // Ignore
+      }
     }
     setUser(null);
     setIsLocalMode(false);
     setAvatarState("astronaut");
     setCreatedAt(null);
-  }, [user]);
+  }, [user, isLocalMode]);
 
   return (
     <AuthContext.Provider

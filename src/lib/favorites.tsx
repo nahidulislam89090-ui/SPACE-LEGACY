@@ -5,7 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./auth";
 import { safeGet, safeSet } from "./safeStorage";
 
-const STORAGE_KEY = "space-legacy-favorites";
+function getFavoritesKey(userId?: string | null): string {
+  if (!userId) return "space-legacy-favorites-guest";
+  return `space-legacy-favorites-${userId}`;
+}
 
 interface FavoritesState {
   favorites: string[];
@@ -19,10 +22,10 @@ const FavoritesContext = createContext<FavoritesState>({
   toggleFav: () => {},
 });
 
-function fromStorage(): string[] {
+function fromStorage(userId?: string | null): string[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = safeGet(STORAGE_KEY);
+    const raw = safeGet(getFavoritesKey(userId));
     return JSON.parse(raw || "[]");
   } catch {
     return [];
@@ -31,20 +34,24 @@ function fromStorage(): string[] {
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const userId = user?.id || null;
   const [favorites, setFavorites] = useState<string[]>([]);
   /** Prevent saving empty initial state before stored data is loaded. */
   const isLoadedRef = useRef(false);
+  const activeUserIdRef = useRef<string | null>(null);
 
-  // ─── Load from localStorage on mount, then merge from Supabase when signed in ───
+  // ─── Load from isolated user storage on mount and when userId changes ───
   useEffect(() => {
-    // Always start with what's in localStorage
-    const local = fromStorage();
+    isLoadedRef.current = false;
+    activeUserIdRef.current = userId;
+
+    const local = fromStorage(userId);
     setFavorites(local);
     isLoadedRef.current = true;
 
-    if (!user) return;
+    if (!user || user.id.startsWith("local-") || user.id.startsWith("guest-")) return;
 
-    // When signed in, fetch remote data and merge
+    // When signed in with remote account, fetch remote data and merge
     let cancelled = false;
     (async () => {
       try {
@@ -54,7 +61,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
           .eq("user_id", user.id)
           .maybeSingle();
 
-        if (cancelled) return;
+        if (cancelled || activeUserIdRef.current !== user.id) return;
 
         const remote: string[] = (data?.favorites as string[] | null) || [];
 
@@ -77,18 +84,18 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [userId]);
 
-  // ─── Persist to localStorage on every state change ───
+  // ─── Persist to isolated user storage on every state change ───
   useEffect(() => {
     if (!isLoadedRef.current) return;
-    safeSet(STORAGE_KEY, JSON.stringify(favorites));
-  }, [favorites]);
+    safeSet(getFavoritesKey(userId), JSON.stringify(favorites));
+  }, [favorites, userId]);
 
   // Sync to Supabase (fire-and-forget)
   const syncToCloud = useCallback(
     (favs: string[]) => {
-      if (!user) return;
+      if (!user || user.id.startsWith("local-") || user.id.startsWith("guest-")) return;
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         void supabase.from("explorer_profiles").update({ favorites: favs as any }).eq("user_id", user.id);

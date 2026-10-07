@@ -15,7 +15,6 @@ const links = [
   { to: "/where-now", label: "Where now?" },
   { to: "/science", label: "Science" },
   { to: "/badges", label: "Badges" },
-  { to: "/teachers", label: "Teachers" },
 ] as const;
 
 export function ThemeToggle() {

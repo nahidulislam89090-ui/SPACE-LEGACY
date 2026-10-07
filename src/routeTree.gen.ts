@@ -16,7 +16,6 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ScienceRouteImport } from './routes/science'
-import { Route as TeachersRouteImport } from './routes/teachers'
 import { Route as TimelineRouteImport } from './routes/timeline'
 import { Route as WhereNowRouteImport } from './routes/where-now'
 import { Route as HardwareSlugRouteImport } from './routes/hardware.$slug'
@@ -56,11 +55,6 @@ const ScienceRoute = ScienceRouteImport.update({
   path: '/science',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TeachersRoute = TeachersRouteImport.update({
-  id: '/teachers',
-  path: '/teachers',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TimelineRoute = TimelineRouteImport.update({
   id: '/timeline',
   path: '/timeline',
@@ -85,7 +79,6 @@ export interface FileRoutesByFullPath {
   '/map': typeof MapRoute
   '/profile': typeof ProfileRoute
   '/science': typeof ScienceRoute
-  '/teachers': typeof TeachersRoute
   '/timeline': typeof TimelineRoute
   '/where-now': typeof WhereNowRoute
   '/hardware/$slug': typeof HardwareSlugRoute
@@ -98,7 +91,6 @@ export interface FileRoutesByTo {
   '/map': typeof MapRoute
   '/profile': typeof ProfileRoute
   '/science': typeof ScienceRoute
-  '/teachers': typeof TeachersRoute
   '/timeline': typeof TimelineRoute
   '/where-now': typeof WhereNowRoute
   '/hardware/$slug': typeof HardwareSlugRoute
@@ -112,7 +104,6 @@ export interface FileRoutesById {
   '/map': typeof MapRoute
   '/profile': typeof ProfileRoute
   '/science': typeof ScienceRoute
-  '/teachers': typeof TeachersRoute
   '/timeline': typeof TimelineRoute
   '/where-now': typeof WhereNowRoute
   '/hardware/$slug': typeof HardwareSlugRoute
@@ -127,7 +118,6 @@ export interface FileRouteTypes {
     | '/map'
     | '/profile'
     | '/science'
-    | '/teachers'
     | '/timeline'
     | '/where-now'
     | '/hardware/$slug'
@@ -140,7 +130,6 @@ export interface FileRouteTypes {
     | '/map'
     | '/profile'
     | '/science'
-    | '/teachers'
     | '/timeline'
     | '/where-now'
     | '/hardware/$slug'
@@ -153,7 +142,6 @@ export interface FileRouteTypes {
     | '/map'
     | '/profile'
     | '/science'
-    | '/teachers'
     | '/timeline'
     | '/where-now'
     | '/hardware/$slug'
@@ -167,7 +155,6 @@ export interface RootRouteChildren {
   MapRoute: typeof MapRoute
   ProfileRoute: typeof ProfileRoute
   ScienceRoute: typeof ScienceRoute
-  TeachersRoute: typeof TeachersRoute
   TimelineRoute: typeof TimelineRoute
   WhereNowRoute: typeof WhereNowRoute
   HardwareSlugRoute: typeof HardwareSlugRoute
@@ -224,13 +211,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ScienceRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/teachers': {
-      id: '/teachers'
-      path: '/teachers'
-      fullPath: '/teachers'
-      preLoaderRoute: typeof TeachersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/timeline': {
       id: '/timeline'
       path: '/timeline'
@@ -263,7 +243,6 @@ const rootRouteChildren: RootRouteChildren = {
   MapRoute: MapRoute,
   ProfileRoute: ProfileRoute,
   ScienceRoute: ScienceRoute,
-  TeachersRoute: TeachersRoute,
   TimelineRoute: TimelineRoute,
   WhereNowRoute: WhereNowRoute,
   HardwareSlugRoute: HardwareSlugRoute,

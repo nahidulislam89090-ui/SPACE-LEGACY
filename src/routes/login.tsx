@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
-import { Mail, Lock, Rocket, Info, Sparkles, CheckCircle2, ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import { Mail, Lock, Rocket, Info, CheckCircle2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,22 +27,72 @@ type Mode = "sign-in" | "sign-up";
 function LoginPage() {
   const navigate = useNavigate();
   const { redirect: redirectTo, message: redirectMessage } = useSearch({ from: "/login" });
-  const { user, signIn, signUp, quickGuestLogin } = useAuth();
+  const { user, signIn, signUp } = useAuth();
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
-  const [quickLoading, setQuickLoading] = useState(false);
 
-  // If already logged in, redirect away from login page to intended target or profile
-  useEffect(() => {
-    if (user) {
-      const target = redirectTo && redirectTo !== "/login" ? redirectTo : "/profile";
-      navigate({ to: target as any, replace: true });
-    }
-  }, [user, redirectTo, navigate]);
+
+  const { signOut } = useAuth();
+
+  if (user) {
+    const target = redirectTo && redirectTo !== "/login" ? redirectTo : "/profile";
+    const displayName =
+      user.user_metadata?.full_name || user.email?.split("@")[0] || "Explorer";
+
+    return (
+      <div className="flex min-h-[80vh] items-center justify-center px-4 py-16">
+        <div className="w-full max-w-md">
+          <div className="rounded-3xl border bg-card p-8 shadow-xl animate-rise text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 text-3xl">
+              🚀
+            </div>
+            <h1 className="mt-4 font-display text-2xl font-bold">
+              You are logged in
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Currently signed in as{" "}
+              <strong className="text-foreground">{displayName}</strong>
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{user.email}</p>
+
+            <div className="mt-6 flex flex-col gap-3">
+              <Button
+                type="button"
+                className="w-full font-bold"
+                onClick={() => navigate({ to: target as any, replace: true })}
+              >
+                Continue to Explorer Profile →
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full font-bold"
+                onClick={async () => {
+                  await signOut();
+                  toast.success("Logged out successfully.");
+                }}
+              >
+                Log out
+              </Button>
+            </div>
+
+            <div className="mt-6 border-t border-border pt-4">
+              <Link
+                to="/"
+                className="inline-block text-sm font-bold text-muted-foreground underline hover:text-foreground"
+              >
+                Continue as guest →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,22 +149,6 @@ function LoginPage() {
     }
   };
 
-  const handleQuickLogin = async () => {
-    setQuickLoading(true);
-    setError("");
-    setInfo("");
-    try {
-      await quickGuestLogin();
-      toast.success("Welcome aboard, Explorer! 🚀 Instant profile activated.");
-      const target = redirectTo && redirectTo !== "/login" ? redirectTo : "/profile";
-      navigate({ to: target as any, replace: true });
-    } catch {
-      setError("Failed to create quick profile. Please try regular login.");
-    } finally {
-      setQuickLoading(false);
-    }
-  };
-
   return (
     <div className="flex min-h-[80vh] items-center justify-center px-4 py-16">
       <div className="w-full max-w-md">
@@ -144,33 +178,7 @@ function LoginPage() {
             </p>
           </div>
 
-          {/* Quick 1-Click Access Button */}
-          <div className="mt-6">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleQuickLogin}
-              disabled={quickLoading || loading}
-              className="w-full border-primary/40 bg-primary/5 hover:bg-primary/15 text-primary font-bold py-5 h-auto rounded-xl flex items-center justify-center gap-2"
-            >
-              <Sparkles className="h-4 w-4" />
-              {quickLoading ? "Launching profile…" : "1-Click Instant Explorer Access"}
-            </Button>
-            <p className="mt-1.5 text-center text-xs text-muted-foreground">
-              Recommended for quick testing & challenges
-            </p>
-          </div>
-
-          <div className="relative my-6 text-center">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border" />
-            </div>
-            <span className="relative bg-card px-3 text-xs uppercase tracking-wider text-muted-foreground">
-              or continue with email
-            </span>
-          </div>
-
-          <form onSubmit={submit} className="space-y-4" noValidate>
+          <form onSubmit={submit} className="mt-6 space-y-4" noValidate>
             <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
@@ -221,7 +229,7 @@ function LoginPage() {
               </div>
             )}
 
-            <Button type="submit" className="w-full font-bold" disabled={loading || quickLoading} aria-busy={loading}>
+            <Button type="submit" className="w-full font-bold" disabled={loading} aria-busy={loading}>
               {loading ? "Please wait…" : mode === "sign-in" ? "Log in" : "Create account"}
             </Button>
           </form>

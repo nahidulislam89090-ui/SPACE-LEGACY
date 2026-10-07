@@ -90,7 +90,7 @@ export function useSyncSettingsToCloud() {
   const settings = useSettings();
 
   const sync = () => {
-    if (!user) return;
+    if (!user || user.id.startsWith("local-") || user.id.startsWith("guest-")) return;
     const prefs = {
       theme: settings.theme,
       reduceMotion: settings.reduceMotion,

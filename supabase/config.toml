@@ -1,11 +1,14 @@
 project_id = "ufefragkrlhsbofaasmb"
 
 [auth]
-site_url = "http://localhost:8080"
+site_url = "http://localhost:8081"
 additional_redirect_urls = [
-  "http://localhost:8080",
   "http://localhost:8081",
-  "https://snap-shot-perfect-780.lovable.app"
+  "http://localhost:8081/**",
+  "http://localhost:8080",
+  "http://localhost:8080/**",
+  "https://space-legacy.vercel.app",
+  "https://space-legacy.vercel.app/**"
 ]
 enable_signup = true
 

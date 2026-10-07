@@ -30,7 +30,10 @@ interface Progress {
   resetProgress: () => void;
 }
 
-const STORAGE_KEY = "space-legacy-progress";
+function getProgressKey(userId?: string | null): string {
+  if (!userId) return "space-legacy-progress-guest";
+  return `space-legacy-progress-${userId}`;
+}
 
 const ProgressContext = createContext<Progress | null>(null);
 
@@ -45,10 +48,10 @@ function emptyProgress(): StoredProgress {
   return { scores: {}, badges: new Set<BadgeId>(), displayName: "", lettersRead: new Set<string>() };
 }
 
-function fromStorage(): StoredProgress {
+function fromStorage(userId?: string | null): StoredProgress {
   if (typeof window === "undefined") return emptyProgress();
   try {
-    const raw = safeGet(STORAGE_KEY);
+    const raw = safeGet(getProgressKey(userId));
     const s = JSON.parse(raw || "{}");
     return {
       scores: (s.scores as Scores) || {},
@@ -61,11 +64,14 @@ function fromStorage(): StoredProgress {
   }
 }
 
-function toStorage(p: { scores: Scores; badges: Set<BadgeId>; displayName: string; lettersRead: Set<string> }) {
+function toStorage(
+  userId: string | null | undefined,
+  p: { scores: Scores; badges: Set<BadgeId>; displayName: string; lettersRead: Set<string> }
+) {
   if (typeof window === "undefined") return;
   try {
     safeSet(
-      STORAGE_KEY,
+      getProgressKey(userId),
       JSON.stringify({
         scores: p.scores,
         badges: [...p.badges],
@@ -80,26 +86,30 @@ function toStorage(p: { scores: Scores; badges: Set<BadgeId>; displayName: strin
 
 export function ProgressProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const userId = user?.id || null;
   const [scores, setScores] = useState<Scores>({});
   const [badges, setBadges] = useState<Set<BadgeId>>(new Set());
   const [displayName, setName] = useState("");
   const [lettersRead, setLettersRead] = useState<Set<string>>(new Set());
   /** Prevent saving empty initial state before stored data is loaded. */
   const isLoadedRef = useRef(false);
+  const activeUserIdRef = useRef<string | null>(null);
 
-  // ─── Load from localStorage on mount, then merge from Supabase when signed in ───
+  // ─── Load from user-specific storage on mount and whenever userId changes ───
   useEffect(() => {
-    // Always start with what's in localStorage
-    const local = fromStorage();
+    isLoadedRef.current = false;
+    activeUserIdRef.current = userId;
+
+    const local = fromStorage(userId);
     setScores(local.scores);
     setBadges(local.badges);
     setName(local.displayName);
     setLettersRead(local.lettersRead);
     isLoadedRef.current = true;
 
-    if (!user) return;
+    if (!user || user.id.startsWith("local-") || user.id.startsWith("guest-")) return;
 
-    // When signed in, fetch remote data and merge
+    // When signed in with remote account, fetch remote data and merge
     let cancelled = false;
     (async () => {
       try {
@@ -109,7 +119,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
           .eq("user_id", user.id)
           .maybeSingle();
 
-        if (cancelled) return;
+        if (cancelled || activeUserIdRef.current !== user.id) return;
 
         const remoteScores: Scores = (data?.quiz_scores as Scores | null) || {};
         const remoteBadges: BadgeId[] = (data?.badges as BadgeId[] | null) || [];
@@ -151,18 +161,18 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [userId]);
 
-  // ─── Persist to localStorage on every state change ───
+  // ─── Persist to isolated user storage on every state change ───
   useEffect(() => {
     if (!isLoadedRef.current) return;
-    toStorage({ scores, badges, displayName, lettersRead });
-  }, [scores, badges, displayName, lettersRead]);
+    toStorage(userId, { scores, badges, displayName, lettersRead });
+  }, [scores, badges, displayName, lettersRead, userId]);
 
   /** Sync full progress to Supabase (fire-and-forget) */
   const syncToCloud = useCallback(
     (s: Scores, b: Set<BadgeId>, n: string, l: Set<string>) => {
-      if (!user) return;
+      if (!user || user.id.startsWith("local-") || user.id.startsWith("guest-")) return;
       try {
         void supabase.from("explorer_profiles").upsert({
           user_id: user.id,
@@ -264,7 +274,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const setDisplayName = useCallback(
     (n: string) => {
       setName(n);
-      if (user) {
+      if (user && !user.id.startsWith("local-") && !user.id.startsWith("guest-")) {
         try {
           void supabase
             .from("explorer_profiles")
@@ -283,8 +293,8 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     setBadges(new Set());
     setName("");
     setLettersRead(new Set());
-    safeRemove(STORAGE_KEY);
-    if (user) {
+    safeRemove(getProgressKey(userId));
+    if (user && !user.id.startsWith("local-") && !user.id.startsWith("guest-")) {
       try {
         void supabase
           .from("explorer_profiles")
@@ -294,7 +304,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
         // Offline fallback
       }
     }
-  }, [user]);
+  }, [user, userId]);
 
   const level = explorerLevel(badges);
   const totalScore = Object.values(scores).reduce((a, b) => a + b, 0);

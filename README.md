@@ -15,7 +15,7 @@ The goal is to show that these machines are abandoned, but not forgotten, and th
 •	Where are they now? status board for deep-space craft (distance, signal travel time, status)
 •	Science Corner with interactive explainers and a Myth or Fact mini-game
 •	Quizzes, badges, and a printable certificate
-•	Teacher Corner with printable lesson plans and worksheets
+
 •	User accounts and profile to save progress, badges, and favorites
 •	Light and dark themes, glossary tooltips, and accessibility options (keyboard navigation, text-size toggle, reduced motion)
 •	Credits page listing all NASA sources and image credits
@@ -52,9 +52,9 @@ Build for Production
 npm run build
 📁 Project Structure
 src/
-├── routes/        # Pages (home, map, hardware profiles, timeline, science, badges, teachers, profile, login, credits)
+├── routes/        # Pages (home, map, hardware profiles, timeline, science, badges, profile, login, credits)
 ├── components/    # Reusable UI components
-├── content/       # Typed content files (hardware, timeline, glossary, quizzes, teacher kits)
+├── content/       # Typed content files (hardware, timeline, glossary, quizzes)
 ├── lib/           # Helpers and providers (auth, favorites, storage)
 └── ...
 Adjust this section to match your actual folders.
