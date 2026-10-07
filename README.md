@@ -1,6 +1,6 @@
-# Pixel Perfect Clone
+# Space Legacy
 
-Implement exactly the screenshot and nothing else
+An interactive storybook museum about NASA hardware left on the Moon, Mars and in deep space.
 
 This project was built with [Lovable](https://lovable.dev).
 
@@ -20,7 +20,7 @@ Prefer working locally? You need Node.js and npm — [install with nvm](https://
 
 ```sh
 git clone <this-repository-url>
-cd <repository-name>
+cd Space-Legacy
 npm i
 npm run dev
 ```
