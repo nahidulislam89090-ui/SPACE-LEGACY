@@ -16,22 +16,37 @@ export type Database = {
     Tables: {
       explorer_profiles: {
         Row: {
+          avatar: string
+          badges: Json
           created_at: string
           display_name: string | null
+          favorites: Json
+          letters_read: Json
+          preferences: Json
           quiz_scores: Json
           updated_at: string
           user_id: string
         }
         Insert: {
+          avatar?: string
+          badges?: Json
           created_at?: string
           display_name?: string | null
+          favorites?: Json
+          letters_read?: Json
+          preferences?: Json
           quiz_scores?: Json
           updated_at?: string
           user_id: string
         }
         Update: {
+          avatar?: string
+          badges?: Json
           created_at?: string
           display_name?: string | null
+          favorites?: Json
+          letters_read?: Json
+          preferences?: Json
           quiz_scores?: Json
           updated_at?: string
           user_id?: string

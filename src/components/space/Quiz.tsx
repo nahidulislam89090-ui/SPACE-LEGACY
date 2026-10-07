@@ -16,7 +16,10 @@ export function Quiz({ item }: { item: Hardware }) {
     if (picks[qi] !== null) return;
     const next = picks.map((p, i) => (i === qi ? oi : p));
     setPicks(next);
-    if (next.every((p) => p !== null)) record(item.slug, next.filter((p, i) => p === item.quiz[i].answer).length);
+    if (next.every((p) => p !== null)) {
+      const numCorrect = next.filter((p, i) => p === item.quiz[i].answer).length;
+      record(item.slug, numCorrect, item.quiz.length);
+    }
   };
 
   return (

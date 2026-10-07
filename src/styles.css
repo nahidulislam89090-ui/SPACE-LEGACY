@@ -200,4 +200,30 @@ html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after 
   .print-target, .print-target * { visibility: visible; }
   .print-target { position: absolute; inset: 0; width: 100%; background: white; color: black; }
   .starfield::before { display: none; }
+
+  /* Certificate print styles */
+  #space-archivist-certificate {
+    border: 4px solid #c9a84c !important;
+    page-break-inside: avoid;
+    font-family: sans-serif;
+  }
+
+  /* Lesson plan / worksheet print layout */
+  #lesson-plan,
+  #student-worksheet,
+  #glossary-ref-content {
+    font-size: 11pt;
+    line-height: 1.5;
+    page-break-inside: auto;
+  }
+
+  /* Hide non-print UI on print */
+  button:not(.print-keep),
+  nav,
+  header,
+  footer,
+  aside:not(.print-keep) {
+    display: none !important;
+  }
 }
+

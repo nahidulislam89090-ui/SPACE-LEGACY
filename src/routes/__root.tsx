@@ -15,6 +15,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SettingsProvider, settingsBootScript } from "@/lib/settings";
 import { AuthProvider } from "@/lib/auth";
 import { ProgressProvider } from "@/lib/progress";
+import { FavoritesProvider } from "@/lib/favorites";
 import { SiteHeader, SiteFooter } from "@/components/space/SiteHeader";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -126,14 +127,16 @@ function RootComponent() {
       <SettingsProvider>
         <AuthProvider>
           <ProgressProvider>
-            <div className="starfield flex min-h-screen flex-col">
-              <SiteHeader />
-              <main id="main" className="relative z-10 flex-1">
-                <Outlet />
-              </main>
-              <SiteFooter />
-            </div>
-            <Toaster />
+            <FavoritesProvider>
+              <div className="starfield flex min-h-screen flex-col">
+                <SiteHeader />
+                <main id="main" className="relative z-10 flex-1">
+                  <Outlet />
+                </main>
+                <SiteFooter />
+              </div>
+              <Toaster />
+            </FavoritesProvider>
           </ProgressProvider>
         </AuthProvider>
       </SettingsProvider>

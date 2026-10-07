@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useRef } from "react";
 import { hardware } from "@/content/hardware";
 import { PageHeader } from "@/components/space/bits";
 import { cn } from "@/lib/utils";
+import { useProgress } from "@/lib/progress";
 
 export const Route = createFileRoute("/timeline")({
   head: () => ({
@@ -19,6 +21,9 @@ const kindStyle = { launch: "bg-accent", landing: "bg-primary", end: "bg-status-
 const kindLabel = { launch: "Launch", landing: "Landing", end: "Last message", milestone: "Big moment" } as const;
 
 function TimelinePage() {
+  const { awardBadge } = useProgress();
+  const bottomRef = useRef<HTMLDivElement>(null);
+
   const events = hardware
     .flatMap((h) => h.events.map((e) => ({ ...e, slug: h.slug, name: h.name })))
     .sort((a, b) => a.date.localeCompare(b.date));
@@ -27,6 +32,18 @@ function TimelinePage() {
     (acc[d] ||= []).push(e);
     return acc;
   }, {});
+
+  // Fire Time Traveler badge when bottom of timeline enters view
+  useEffect(() => {
+    const el = bottomRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { awardBadge("time-traveler"); obs.disconnect(); } },
+      { threshold: 0.5 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [awardBadge]);
 
   return (
     <div className="mx-auto max-w-3xl px-4">
@@ -53,6 +70,9 @@ function TimelinePage() {
           </ol>
         </section>
       ))}
+      {/* Sentinel for Time Traveler badge */}
+      <div ref={bottomRef} className="h-4" aria-hidden />
     </div>
   );
 }
+

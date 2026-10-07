@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Menu, Moon, Sun, Settings2, LogOut, UserRound } from "lucide-react";
+import { Menu, Moon, Sun, Settings2, LogOut, UserRound, Award } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useSettings } from "@/lib/settings";
 import { useAuth } from "@/lib/auth";
+import { getAvatar } from "@/lib/avatars";
 
 const links = [
   { to: "/map", label: "Map" },
@@ -55,27 +56,54 @@ function SettingsMenu() {
 }
 
 function AccountButton() {
-  const { user, signOut } = useAuth();
+  const { user, avatar, signOut } = useAuth();
   const navigate = useNavigate();
+  const avatarDef = getAvatar(avatar ?? "astronaut");
+
   if (!user) {
     return (
       <Button asChild size="sm" className="h-11 rounded-full px-5 font-bold">
-        <Link to="/login">Log in</Link>
+        <Link to="/login" search={{ redirect: "", message: "" }}>Log in</Link>
       </Button>
     );
   }
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="icon" className="h-11 w-11 rounded-full" aria-label="Your account">
-          <UserRound className="h-5 w-5" />
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-11 w-11 rounded-full text-lg"
+          aria-label="Your account"
+        >
+          <span aria-hidden>{avatarDef.emoji}</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-60">
-        <p className="truncate text-sm text-muted-foreground">{user.email}</p>
-        <Button variant="outline" className="mt-3 w-full" onClick={async () => { await signOut(); navigate({ to: "/", replace: true }); }}>
-          <LogOut className="mr-2 h-4 w-4" /> Log out
-        </Button>
+      <PopoverContent align="end" className="w-56 p-2">
+        <p className="truncate px-2 pb-2 text-xs text-muted-foreground">{user.email}</p>
+        <Link
+          to="/profile"
+          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold hover:bg-muted"
+        >
+          <UserRound className="h-4 w-4" aria-hidden /> Profile
+        </Link>
+        <Link
+          to="/badges"
+          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold hover:bg-muted"
+        >
+          <Award className="h-4 w-4" aria-hidden /> Badges
+        </Link>
+        <div className="my-1 border-t border-border" />
+        <button
+          type="button"
+          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-muted-foreground hover:bg-muted hover:text-foreground"
+          onClick={async () => {
+            await signOut();
+            navigate({ to: "/", replace: true });
+          }}
+        >
+          <LogOut className="h-4 w-4" aria-hidden /> Log out
+        </button>
       </PopoverContent>
     </Popover>
   );

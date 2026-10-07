@@ -55,7 +55,7 @@ export function Rich({ text }: { text: string }) {
 
 export const plain = (text: string) => text.replace(/\[\[\w+\|([^\]]+)\]\]/g, "$1");
 
-export function ReadAloud({ text }: { text: string }) {
+export function ReadAloud({ text, onPlay }: { text: string; onPlay?: () => void }) {
   const [supported, setSupported] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   useEffect(() => {
@@ -70,6 +70,7 @@ export function ReadAloud({ text }: { text: string }) {
     u.onend = () => setSpeaking(false);
     window.speechSynthesis.speak(u);
     setSpeaking(true);
+    onPlay?.();
   };
   return (
     <button type="button" onClick={toggle} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-letter-foreground/30 px-4 text-sm font-bold hover:bg-letter-foreground/10" aria-pressed={speaking}>

@@ -1,8 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useEffect, useRef } from "react";
 import { ArrowLeft, ExternalLink, Mail, Rocket, MapPin, Lightbulb } from "lucide-react";
 import { getHardware, hardware, zoneLabels } from "@/content/hardware";
 import { ReadAloud, Rich, StatusBadge } from "@/components/space/bits";
 import { Quiz } from "@/components/space/Quiz";
+import { useProgress } from "@/lib/progress";
 
 export const Route = createFileRoute("/hardware/$slug")({
   loader: ({ params }) => {
@@ -53,6 +55,21 @@ function Profile() {
   const item = getHardware(slug)!;
   const idx = hardware.findIndex((h) => h.slug === slug);
   const next = hardware[(idx + 1) % hardware.length];
+  const { awardBadge, markLetterRead } = useProgress();
+  const firedFirstFootprint = useRef(false);
+
+  // Fire "First Footprint" badge once per session per profile open
+  useEffect(() => {
+    if (!firedFirstFootprint.current) {
+      firedFirstFootprint.current = true;
+      awardBadge("first-footprint");
+    }
+  }, [awardBadge]);
+
+  // Track letter reads for "Letter Reader" badge
+  const handleLetterRead = () => {
+    markLetterRead(item.slug);
+  };
 
   return (
     <article className="mx-auto max-w-4xl px-4 py-10">
@@ -75,9 +92,14 @@ function Profile() {
 
       <aside className="mt-8 rounded-3xl bg-letter p-6 text-letter-foreground sm:p-8" aria-label={`Letter from ${item.name}`}>
         <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest"><Mail className="h-4 w-4" /> A letter from the machine</p>
-        <p className="mt-3 font-display text-2xl leading-snug">“{item.letter}”</p>
+        <p className="mt-3 font-display text-2xl leading-snug">"{item.letter}"</p>
         <p className="mt-3 text-sm opacity-80">This letter is make-believe, told in the machine's voice. The facts below are real.</p>
-        <div className="mt-4"><ReadAloud text={item.letter} /></div>
+        <div className="mt-4">
+          {/* Wrap ReadAloud to fire markLetterRead when user presses play */}
+          <ReadAloud text={item.letter} onPlay={handleLetterRead} />
+        </div>
+        {/* Also mark as read when the section is viewed — fire on mount */}
+        <LetterViewTracker slug={item.slug} />
       </aside>
 
       <div className="mt-8 space-y-6">
@@ -110,4 +132,17 @@ function Profile() {
       </div>
     </article>
   );
+}
+
+/** Fires markLetterRead once when the letter section is displayed. */
+function LetterViewTracker({ slug }: { slug: string }) {
+  const { markLetterRead } = useProgress();
+  const fired = useRef(false);
+  useEffect(() => {
+    if (!fired.current) {
+      fired.current = true;
+      markLetterRead(slug);
+    }
+  }, [slug, markLetterRead]);
+  return null;
 }

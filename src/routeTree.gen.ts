@@ -10,8 +10,15 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BadgesRouteImport } from './routes/badges'
+import { Route as CreditsRouteImport } from './routes/credits'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as MapRouteImport } from './routes/map'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as ScienceRouteImport } from './routes/science'
+import { Route as TeachersRouteImport } from './routes/teachers'
 import { Route as TimelineRouteImport } from './routes/timeline'
+import { Route as WhereNowRouteImport } from './routes/where-now'
 import { Route as HardwareSlugRouteImport } from './routes/hardware.$slug'
 
 const IndexRoute = IndexRouteImport.update({
@@ -19,14 +26,49 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BadgesRoute = BadgesRouteImport.update({
+  id: '/badges',
+  path: '/badges',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreditsRoute = CreditsRouteImport.update({
+  id: '/credits',
+  path: '/credits',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MapRoute = MapRouteImport.update({
   id: '/map',
   path: '/map',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScienceRoute = ScienceRouteImport.update({
+  id: '/science',
+  path: '/science',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeachersRoute = TeachersRouteImport.update({
+  id: '/teachers',
+  path: '/teachers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TimelineRoute = TimelineRouteImport.update({
   id: '/timeline',
   path: '/timeline',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WhereNowRoute = WhereNowRouteImport.update({
+  id: '/where-now',
+  path: '/where-now',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HardwareSlugRoute = HardwareSlugRouteImport.update({
@@ -37,35 +79,97 @@ const HardwareSlugRoute = HardwareSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/badges': typeof BadgesRoute
+  '/credits': typeof CreditsRoute
+  '/login': typeof LoginRoute
   '/map': typeof MapRoute
+  '/profile': typeof ProfileRoute
+  '/science': typeof ScienceRoute
+  '/teachers': typeof TeachersRoute
   '/timeline': typeof TimelineRoute
+  '/where-now': typeof WhereNowRoute
   '/hardware/$slug': typeof HardwareSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/badges': typeof BadgesRoute
+  '/credits': typeof CreditsRoute
+  '/login': typeof LoginRoute
   '/map': typeof MapRoute
+  '/profile': typeof ProfileRoute
+  '/science': typeof ScienceRoute
+  '/teachers': typeof TeachersRoute
   '/timeline': typeof TimelineRoute
+  '/where-now': typeof WhereNowRoute
   '/hardware/$slug': typeof HardwareSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/badges': typeof BadgesRoute
+  '/credits': typeof CreditsRoute
+  '/login': typeof LoginRoute
   '/map': typeof MapRoute
+  '/profile': typeof ProfileRoute
+  '/science': typeof ScienceRoute
+  '/teachers': typeof TeachersRoute
   '/timeline': typeof TimelineRoute
+  '/where-now': typeof WhereNowRoute
   '/hardware/$slug': typeof HardwareSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/map' | '/timeline' | '/hardware/$slug'
+  fullPaths:
+    | '/'
+    | '/badges'
+    | '/credits'
+    | '/login'
+    | '/map'
+    | '/profile'
+    | '/science'
+    | '/teachers'
+    | '/timeline'
+    | '/where-now'
+    | '/hardware/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/map' | '/timeline' | '/hardware/$slug'
-  id: '__root__' | '/' | '/map' | '/timeline' | '/hardware/$slug'
+  to:
+    | '/'
+    | '/badges'
+    | '/credits'
+    | '/login'
+    | '/map'
+    | '/profile'
+    | '/science'
+    | '/teachers'
+    | '/timeline'
+    | '/where-now'
+    | '/hardware/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/badges'
+    | '/credits'
+    | '/login'
+    | '/map'
+    | '/profile'
+    | '/science'
+    | '/teachers'
+    | '/timeline'
+    | '/where-now'
+    | '/hardware/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BadgesRoute: typeof BadgesRoute
+  CreditsRoute: typeof CreditsRoute
+  LoginRoute: typeof LoginRoute
   MapRoute: typeof MapRoute
+  ProfileRoute: typeof ProfileRoute
+  ScienceRoute: typeof ScienceRoute
+  TeachersRoute: typeof TeachersRoute
   TimelineRoute: typeof TimelineRoute
+  WhereNowRoute: typeof WhereNowRoute
   HardwareSlugRoute: typeof HardwareSlugRoute
 }
 
@@ -78,6 +182,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/badges': {
+      id: '/badges'
+      path: '/badges'
+      fullPath: '/badges'
+      preLoaderRoute: typeof BadgesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/credits': {
+      id: '/credits'
+      path: '/credits'
+      fullPath: '/credits'
+      preLoaderRoute: typeof CreditsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/map': {
       id: '/map'
       path: '/map'
@@ -85,11 +210,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MapRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/science': {
+      id: '/science'
+      path: '/science'
+      fullPath: '/science'
+      preLoaderRoute: typeof ScienceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teachers': {
+      id: '/teachers'
+      path: '/teachers'
+      fullPath: '/teachers'
+      preLoaderRoute: typeof TeachersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/timeline': {
       id: '/timeline'
       path: '/timeline'
       fullPath: '/timeline'
       preLoaderRoute: typeof TimelineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/where-now': {
+      id: '/where-now'
+      path: '/where-now'
+      fullPath: '/where-now'
+      preLoaderRoute: typeof WhereNowRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/hardware/$slug': {
@@ -104,8 +257,15 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BadgesRoute: BadgesRoute,
+  CreditsRoute: CreditsRoute,
+  LoginRoute: LoginRoute,
   MapRoute: MapRoute,
+  ProfileRoute: ProfileRoute,
+  ScienceRoute: ScienceRoute,
+  TeachersRoute: TeachersRoute,
   TimelineRoute: TimelineRoute,
+  WhereNowRoute: WhereNowRoute,
   HardwareSlugRoute: HardwareSlugRoute,
 }
 export const routeTree = rootRouteImport

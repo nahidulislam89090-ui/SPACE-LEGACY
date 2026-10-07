@@ -1,1 +1,13 @@
 project_id = "ufefragkrlhsbofaasmb"
+
+[auth]
+site_url = "http://localhost:8080"
+additional_redirect_urls = [
+  "http://localhost:8080",
+  "http://localhost:8081",
+  "https://snap-shot-perfect-780.lovable.app"
+]
+enable_signup = true
+
+[auth.email]
+enable_confirmations = false
