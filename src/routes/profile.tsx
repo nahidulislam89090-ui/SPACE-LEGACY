@@ -191,7 +191,7 @@ function ProfileContent() {
                 </div>
               ) : (
                 <>
-                  <h1 className="font-display text-3xl font-bold">
+                  <h1 className="font-display font-bold" style={{ fontSize: "clamp(1.5rem, 6vw, 1.875rem)" }}>
                     {displayName || "Space Explorer"}
                   </h1>
                   <Button
@@ -254,7 +254,7 @@ function ProfileContent() {
 
       {/* ═══ Tabs ═══ */}
       <Tabs defaultValue="progress" className="mt-8">
-        <TabsList className="flex w-full flex-wrap justify-start gap-1 bg-transparent">
+        <TabsList className="flex w-full overflow-x-auto sm:flex-wrap justify-start gap-1 bg-transparent">
           <TabsTrigger value="progress" className="rounded-full px-4 font-bold data-[state=active]:bg-primary/15 data-[state=active]:text-primary">
             My Progress
           </TabsTrigger>
@@ -309,7 +309,7 @@ function ProgressTab() {
         <h2 id="zone-progress-title" className="font-display text-xl font-semibold">
           Zone Progress
         </h2>
-        <div className="mt-6 grid gap-8 sm:grid-cols-3">
+        <div className="mt-6 grid gap-8 grid-cols-1 sm:grid-cols-3">
           {zones.map(({ zone, label, colorClass }) => {
             const items = hardware.filter((h) => h.zone === zone);
             const visited = items.filter((h) => (scores[h.slug] ?? 0) > 0).length;
@@ -339,7 +339,7 @@ function ProgressTab() {
         </h2>
         <div className="mt-4 space-y-3">
           {/* Quiz scores per hardware */}
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
             {hardware.map((h) => {
               const score = scores[h.slug] ?? 0;
               const total = h.quiz.length;
@@ -374,7 +374,7 @@ function ProgressTab() {
           </div>
 
           {/* Science explainers & timeline */}
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="mt-4 grid gap-3 grid-cols-1 sm:grid-cols-2">
             <div className="flex items-center justify-between rounded-xl border px-3 py-2 text-sm">
               <span className="font-bold">Letters read</span>
               <span className="text-muted-foreground">{lettersRead.size} read</span>

@@ -27,14 +27,14 @@ export function Quiz({ item }: { item: Hardware }) {
       {item.quiz.map((q, qi) => (
         <fieldset key={qi} className="rounded-2xl border bg-card p-5">
           <legend className="px-2 font-display text-lg font-semibold">{qi + 1}. {q.q}</legend>
-          <div className="mt-2 grid gap-2 sm:grid-cols-3">
+          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
             {q.options.map((o, oi) => {
               const chosen = picks[qi] === oi;
               const answered = picks[qi] !== null;
               const right = oi === q.answer;
               return (
                 <button key={oi} type="button" onClick={() => pick(qi, oi)} disabled={answered}
-                  className={cn("flex min-h-12 items-center justify-between gap-2 rounded-xl border-2 px-4 py-2 text-left font-bold transition-colors",
+                  className={cn("flex min-h-[44px] items-center justify-between gap-2 rounded-xl border-2 px-4 py-3 text-left font-bold transition-colors",
                     !answered && "hover:border-primary hover:bg-primary/10",
                     answered && right && "border-status-talking bg-status-talking/15",
                     answered && chosen && !right && "border-destructive bg-destructive/15",

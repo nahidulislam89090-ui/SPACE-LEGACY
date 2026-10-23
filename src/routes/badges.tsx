@@ -146,7 +146,7 @@ function BadgesPage() {
       {/* Header */}
       <header className="animate-rise text-center">
         <p className="text-sm font-bold uppercase tracking-[0.2em] text-accent">Your achievements</p>
-        <h1 className="mt-3 font-display text-5xl font-bold">Explorer Badges</h1>
+        <h1 className="mt-3 font-display font-bold" style={{ fontSize: "clamp(1.75rem, 7vw, 3rem)" }}>Explorer Badges</h1>
         <p className="mt-3 text-lg text-muted-foreground">Collect badges as you explore the museum.</p>
       </header>
 
@@ -207,7 +207,7 @@ function BadgesPage() {
       {/* Trophy shelf */}
       <section aria-labelledby="badge-shelf-title" className="mt-10">
         <h2 id="badge-shelf-title" className="mb-6 font-display text-2xl font-semibold">Trophy Shelf</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {BADGE_DEFS.map((def) => (
             <BadgeCard key={def.id} id={def.id} earned={badges.has(def.id)} />
           ))}
@@ -233,7 +233,7 @@ function BadgesPage() {
 
       {/* Certificate */}
       <section className="mt-10" aria-labelledby="cert-title">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h2 id="cert-title" className="font-display text-2xl font-semibold">Space Archivist Certificate</h2>
           {archivistUnlocked && (
             <span className="rounded-full bg-accent/20 px-3 py-1 text-xs font-bold text-accent">Unlocked!</span>

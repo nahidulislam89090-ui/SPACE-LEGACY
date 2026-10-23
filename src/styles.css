@@ -1,5 +1,4 @@
-@import "tailwindcss" source(none);
-@source "../src";
+@import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -224,6 +223,89 @@ html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after 
   footer,
   aside:not(.print-keep) {
     display: none !important;
+  }
+}
+
+/* ═══ Responsive mobile-first rules ═══════════════════════════════════════════ */
+
+/* Prevent horizontal scrolling globally */
+html, body { overflow-x: hidden; max-width: 100vw; }
+
+/* Enforce 16px minimum body text on small screens */
+@media (max-width: 640px) {
+  body { font-size: max(1rem, 16px); }
+  /* Headings scale down gracefully */
+  h1 { font-size: clamp(1.75rem, 6vw, 3rem); word-break: break-word; overflow-wrap: break-word; }
+  h2 { font-size: clamp(1.35rem, 5vw, 2rem); word-break: break-word; overflow-wrap: break-word; }
+  h3 { font-size: clamp(1.125rem, 4vw, 1.5rem); }
+  /* Prevent any text from going below 16px (except micro labels explicitly styled) */
+  p, li, dd, dt, span, a, label, legend { font-size: max(inherit, 1rem); }
+}
+
+/* ── Map hotspot mobile styles ────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  /* Make map dots bigger and tappable (44px minimum) */
+  .map-hotspot {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px;
+  }
+  .map-hotspot > span:first-child {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+}
+
+/* ── Mobile bottom-sheet overlay for map labels ───────────────────────────── */
+.map-label-mobile {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  padding: 1.25rem 1.5rem;
+  padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+  border-top-left-radius: 1.5rem;
+  border-top-right-radius: 1.5rem;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-popover);
+  color: var(--color-popover-foreground);
+  box-shadow: 0 -8px 30px -10px rgba(0, 0, 0, 0.3);
+  animation: slide-up 0.25s ease-out;
+}
+@keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.map-label-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* ── Profile tabs scroll on mobile ────────────────────────────────────────── */
+@media (max-width: 640px) {
+  [role="tablist"] {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap !important;
+    gap: 0.25rem !important;
+  }
+  [role="tablist"]::-webkit-scrollbar { display: none; }
+  [role="tab"] {
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-height: 44px;
+    font-size: 0.875rem;
+  }
+}
+
+/* ── Certificate responsive ───────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  #space-archivist-certificate {
+    padding: 1.5rem !important;
+  }
+  #space-archivist-certificate h2 {
+    font-size: 1.5rem !important;
   }
 }
 

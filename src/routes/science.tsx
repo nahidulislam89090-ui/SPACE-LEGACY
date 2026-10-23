@@ -128,7 +128,7 @@ function DustStormExplainer() {
       </div>
 
       {/* Visual simulation */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      <div className="mt-6 grid gap-4 grid-cols-1 sm:grid-cols-2">
         {/* Sky */}
         <div className="overflow-hidden rounded-2xl" aria-label={`Sky: ${dustPct}% dust`}>
           <div className="relative flex h-32 items-center justify-center transition-colors duration-300"
@@ -237,14 +237,14 @@ function SignalExplainer() {
         When we send a <Term k="radio">radio signal</Term> to a spacecraft, it travels at the <strong>speed of light</strong> — but space is so huge it can still take hours! Pick a destination to see how long.
       </p>
 
-      <div className="mt-6 flex flex-wrap gap-2" role="group" aria-label="Choose a destination">
+      <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap" role="group" aria-label="Choose a destination">
         {DESTINATIONS.map((d, i) => (
           <button
             key={d.name}
             type="button"
             onClick={() => handleSelect(i)}
             className={cn(
-              "rounded-full border px-4 py-2 text-sm font-bold transition-colors",
+              "rounded-full border px-4 py-2 text-sm font-bold transition-colors min-h-[44px] w-full sm:w-auto text-center",
               i === choice
                 ? "border-primary bg-primary/20 text-primary"
                 : "border-border hover:border-primary hover:bg-primary/10"
@@ -478,7 +478,7 @@ function MarsquakeExplainer() {
         </div>
       </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-6 grid gap-3 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
         {facts.map((f) => (
           <div key={f.label} className="rounded-2xl bg-muted p-3 text-center">
             <p className="text-2xl" aria-hidden>{f.emoji}</p>

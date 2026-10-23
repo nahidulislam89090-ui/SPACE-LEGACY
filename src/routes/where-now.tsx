@@ -152,7 +152,7 @@ function ProbeCard({ probe }: { probe: Probe }) {
       <p className="mt-4 text-lg text-muted-foreground">{probe.description}</p>
 
       {/* Distance numbers */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+      <div className="mt-6 grid gap-4 grid-cols-1 sm:grid-cols-3">
         <Stat label="Distance from Earth (approx.)" value={`${fmtAU(au)} AU`} sub={fmtKm(km)} />
         <Stat
           label={<><Term k="radio">Signal</Term> travel time</>}

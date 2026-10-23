@@ -47,7 +47,15 @@ export function Rich({ text }: { text: string }) {
     <>
       {parts.map((p, i) => {
         const m = p.match(/^\[\[(\w+)\|([^\]]+)\]\]$/);
-        return m ? <Term key={i} k={m[1]}>{m[2]}</Term> : <Fragment key={i}>{p}</Fragment>;
+        const key = m?.[1];
+        const label = m?.[2];
+        return key && label ? (
+          <Term key={i} k={key}>
+            {label}
+          </Term>
+        ) : (
+          <Fragment key={i}>{p}</Fragment>
+        );
       })}
     </>
   );
@@ -84,8 +92,8 @@ export function PageHeader({ eyebrow, title, intro }: { eyebrow: string; title: 
   return (
     <header className="mx-auto max-w-3xl px-4 pb-8 pt-12 text-center animate-rise">
       <p className="text-sm font-bold uppercase tracking-[0.2em] text-accent">{eyebrow}</p>
-      <h1 className="mt-3 text-4xl font-semibold sm:text-5xl">{title}</h1>
-      {intro && <p className="mt-4 text-lg text-muted-foreground">{intro}</p>}
+      <h1 className="mt-3 font-semibold" style={{ fontSize: "clamp(1.75rem, 7vw, 3rem)" }}>{title}</h1>
+      {intro && <p className="mt-4 text-base sm:text-lg text-muted-foreground">{intro}</p>}
     </header>
   );
 }

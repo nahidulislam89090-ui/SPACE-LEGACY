@@ -41,7 +41,7 @@ function LoginPage() {
   if (user) {
     const target = redirectTo && redirectTo !== "/login" ? redirectTo : "/profile";
     const displayName =
-      user.user_metadata?.full_name || user.email?.split("@")[0] || "Explorer";
+      user.user_metadata?.["full_name"] || user.email?.split("@")[0] || "Explorer";
 
     return (
       <div className="flex min-h-[80vh] items-center justify-center px-4 py-16">
@@ -168,7 +168,7 @@ function LoginPage() {
           </div>
 
           <div className="mt-5 text-center">
-            <h1 className="font-display text-3xl font-bold">
+            <h1 className="font-display font-bold" style={{ fontSize: "clamp(1.5rem, 6vw, 1.875rem)" }}>
               {mode === "sign-in" ? "Welcome back, Explorer!" : "Join SPACE LEGACY"}
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">

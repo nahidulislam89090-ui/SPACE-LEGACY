@@ -123,21 +123,29 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <ThemeToggle />
-        <SettingsMenu />
+        {/* Theme & settings hidden on phones, visible on sm+ */}
+        <span className="hidden sm:flex items-center gap-1">
+          <ThemeToggle />
+          <SettingsMenu />
+        </span>
         <AccountButton />
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-11 w-11 lg:hidden" aria-label="Open menu"><Menu className="h-5 w-5" /></Button>
+            <Button variant="ghost" size="icon" className="h-11 w-11 lg:hidden" aria-label="Open menu"><Menu className="h-6 w-6" /></Button>
           </SheetTrigger>
           <SheetContent side="right">
             <SheetTitle className="font-display">Explore</SheetTitle>
             <nav className="mt-6 flex flex-col gap-1" aria-label="Mobile">
               {links.map((l) => (
-                <Link key={l.to} to={l.to} className="rounded-xl px-4 py-3 text-lg font-bold hover:bg-muted">{l.label}</Link>
+                <Link key={l.to} to={l.to} className="flex min-h-[44px] items-center rounded-xl px-4 py-3 text-lg font-bold hover:bg-muted">{l.label}</Link>
               ))}
-              <Link to="/credits" className="rounded-xl px-4 py-3 text-lg font-bold hover:bg-muted">Credits</Link>
+              <Link to="/credits" className="flex min-h-[44px] items-center rounded-xl px-4 py-3 text-lg font-bold hover:bg-muted">Credits</Link>
             </nav>
+            {/* Theme & settings in mobile menu */}
+            <div className="mt-6 flex items-center gap-2 border-t border-border pt-4 sm:hidden">
+              <ThemeToggle />
+              <SettingsMenu />
+            </div>
           </SheetContent>
         </Sheet>
       </div>

@@ -27,18 +27,18 @@ function Home() {
   const featured = ["opportunity", "voyager-1", "apollo-11-eagle"].map((s) => hardware.find((h) => h.slug === s)!);
   return (
     <>
-      <section className="relative isolate -mt-px flex min-h-[88vh] items-end overflow-hidden">
+      <section className="relative isolate -mt-px flex min-h-[70vh] sm:min-h-[88vh] items-end overflow-hidden">
         <img src={hero} alt="Painting of an old Moon lander with footprints, Earth and Mars in a starry sky" width={1920} height={1088} className="absolute inset-0 -z-20 h-full w-full object-cover" />
         <div className="hero-overlay absolute inset-0 -z-10" />
         <div className="mx-auto w-full max-w-6xl px-4 pb-20 animate-rise">
           <p className="text-sm font-bold uppercase tracking-[0.25em] text-accent">Abandoned but not forgotten</p>
-          <h1 className="mt-4 max-w-3xl text-5xl font-bold leading-[1.05] sm:text-7xl">
+          <h1 className="mt-4 max-w-3xl font-bold leading-[1.05]" style={{ fontSize: "clamp(2rem, 8vw, 4.5rem)" }}>
             SPACE <span className="text-primary">LEGACY</span>
           </h1>
-          <p className="mt-5 max-w-xl text-xl text-foreground/90">
+          <p className="mt-5 max-w-xl text-base sm:text-xl text-foreground/90">
             The solar system is a giant museum with no roof. Come meet the machines we left behind, and hear their stories.
           </p>
-          <Button asChild size="lg" className="glow mt-8 h-14 rounded-full px-8 text-lg font-bold">
+          <Button asChild size="lg" className="glow mt-8 h-14 w-full sm:w-auto rounded-full px-8 text-lg font-bold">
             <Link to="/map">Start exploring <ArrowRight className="ml-2 h-5 w-5" /></Link>
           </Button>
         </div>

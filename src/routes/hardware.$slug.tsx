@@ -82,8 +82,8 @@ function Profile() {
             <StatusBadge status={item.status} />
             <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold">{zoneLabels[item.zone]}</span>
           </div>
-          <h1 className="mt-4 text-4xl font-semibold sm:text-5xl">{item.name}</h1>
-          <dl className="mt-5 grid gap-3 sm:grid-cols-2">
+          <h1 className="mt-4 font-semibold" style={{ fontSize: "clamp(1.75rem, 6vw, 3rem)" }}>{item.name}</h1>
+          <dl className="mt-5 grid gap-3 grid-cols-1 sm:grid-cols-2">
             <div className="flex gap-2"><Rocket className="mt-1 h-5 w-5 text-primary" aria-hidden /><div><dt className="text-sm text-muted-foreground">Launched</dt><dd className="font-bold">{item.launch}</dd></div></div>
             <div className="flex gap-2"><MapPin className="mt-1 h-5 w-5 text-primary" aria-hidden /><div><dt className="text-sm text-muted-foreground">Where it is</dt><dd className="font-bold">{item.location}</dd></div></div>
           </dl>
