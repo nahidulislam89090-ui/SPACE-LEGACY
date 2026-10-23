@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import hero from "@/assets/hero.jpg";
 import { hardware, zoneLabels, type Zone } from "@/content/hardware";
 import { StatusBadge } from "@/components/space/bits";
+import { ImgWithFallback } from "@/components/space/states";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -62,7 +63,7 @@ function Home() {
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           {featured.map((h) => (
             <Link key={h.slug} to="/hardware/$slug" params={{ slug: h.slug }} className="overflow-hidden rounded-3xl border bg-card transition-transform hover:-translate-y-1">
-              <img src={h.image} alt={h.imageAlt} loading="lazy" width={1200} height={800} className="aspect-[3/2] w-full object-cover" />
+              <ImgWithFallback src={h.image} alt={h.imageAlt} fallbackLabel={h.name} loading="lazy" width={1200} height={800} className="aspect-[3/2] w-full object-cover" />
               <div className="p-5">
                 <StatusBadge status={h.status} />
                 <p className="mt-3 font-display text-xl font-semibold">{h.name}</p>

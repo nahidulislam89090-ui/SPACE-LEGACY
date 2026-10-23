@@ -42,6 +42,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import {
+  ProfileSkeleton,
+  EmptyBadges,
+  EmptyFavorites,
+  EmptyQuizScores,
+  ImgWithFallback,
+} from "@/components/space/states";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -81,14 +88,7 @@ function ProfilePage() {
   }, [user, loading, navigate]);
 
   if (loading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="text-center animate-rise">
-          <div className="mx-auto h-16 w-16 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
-          <p className="mt-4 text-muted-foreground">Loading your profile…</p>
-        </div>
-      </div>
-    );
+    return <ProfileSkeleton />;
   }
 
   if (!user) return null;
@@ -340,37 +340,43 @@ function ProgressTab() {
         <div className="mt-4 space-y-3">
           {/* Quiz scores per hardware */}
           <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
-            {hardware.map((h) => {
-              const score = scores[h.slug] ?? 0;
-              const total = h.quiz.length;
-              const passed = score >= Math.ceil(total / 2);
-              return (
-                <div
-                  key={h.slug}
-                  className="flex items-center justify-between rounded-xl border px-3 py-2 text-sm"
-                >
-                  <Link
-                    to="/hardware/$slug"
-                    params={{ slug: h.slug }}
-                    className="truncate font-bold hover:text-primary"
+            {(() => {
+              const allScores = hardware.filter((h) => (scores[h.slug] ?? 0) > 0);
+              if (allScores.length === 0) {
+                return <EmptyQuizScores />;
+              }
+              return hardware.map((h) => {
+                const score = scores[h.slug] ?? 0;
+                const total = h.quiz.length;
+                const passed = score >= Math.ceil(total / 2);
+                return (
+                  <div
+                    key={h.slug}
+                    className="flex items-center justify-between rounded-xl border px-3 py-2 text-sm"
                   >
-                    {h.name}
-                  </Link>
-                  <span
-                    className={cn(
-                      "ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs font-bold",
-                      passed
-                        ? "bg-status-talking/15 text-status-talking"
-                        : score > 0
-                          ? "bg-accent/15 text-accent"
-                          : "bg-muted text-muted-foreground"
-                    )}
-                  >
-                    {score > 0 ? `${score}/${total}` : "—"}
-                  </span>
-                </div>
-              );
-            })}
+                    <Link
+                      to="/hardware/$slug"
+                      params={{ slug: h.slug }}
+                      className="truncate font-bold hover:text-primary"
+                    >
+                      {h.name}
+                    </Link>
+                    <span
+                      className={cn(
+                        "ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs font-bold",
+                        passed
+                          ? "bg-status-talking/15 text-status-talking"
+                          : score > 0
+                            ? "bg-accent/15 text-accent"
+                            : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      {score > 0 ? `${score}/${total}` : "—"}
+                    </span>
+                  </div>
+                );
+              });
+            })()}
           </div>
 
           {/* Science explainers & timeline */}
@@ -408,9 +414,7 @@ function BadgesTab() {
           Earned Badges ({earned.length})
         </h2>
         {earned.length === 0 ? (
-          <p className="mt-4 text-muted-foreground">
-            No badges yet. Start exploring to earn your first one! 🚀
-          </p>
+          <EmptyBadges />
         ) : (
           <div className="mt-4 flex flex-wrap gap-3">
             {earned.map((b) => (
@@ -508,21 +512,7 @@ function FavoritesTab() {
     .filter(Boolean) as typeof hardware;
 
   if (favItems.length === 0) {
-    return (
-      <div className="rounded-3xl border bg-card p-8 text-center">
-        <Heart className="mx-auto h-10 w-10 text-muted-foreground" aria-hidden />
-        <p className="mt-3 font-display text-xl">No favorites yet</p>
-        <p className="mt-1 text-muted-foreground">
-          Tap the heart on any machine to save it here! 💛
-        </p>
-        <Link
-          to="/map"
-          className="mt-4 inline-block rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90"
-        >
-          Explore the map
-        </Link>
-      </div>
-    );
+    return <EmptyFavorites />;
   }
 
   return (
@@ -534,9 +524,10 @@ function FavoritesTab() {
           params={{ slug: item.slug }}
           className="group overflow-hidden rounded-2xl border bg-card transition-all hover:-translate-y-1 hover:shadow-lg"
         >
-          <img
+          <ImgWithFallback
             src={item.image}
             alt={item.imageAlt}
+            fallbackLabel={item.name}
             className="aspect-[2/1] w-full object-cover"
           />
           <div className="p-4">

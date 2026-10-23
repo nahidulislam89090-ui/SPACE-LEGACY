@@ -9,6 +9,7 @@ import {
   type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { Map } from "lucide-react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -18,22 +19,40 @@ import { ProgressProvider } from "@/lib/progress";
 import { FavoritesProvider } from "@/lib/favorites";
 import { SiteHeader, SiteFooter } from "@/components/space/SiteHeader";
 import { Toaster } from "@/components/ui/sonner";
+import { GlobalErrorScreen } from "@/components/space/states";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+    <div className="flex min-h-[80vh] items-center justify-center bg-background px-4">
+      <div className="mx-auto max-w-md text-center animate-rise">
+        {/* Floating rocket drifting across */}
+        <div className="relative mx-auto mb-6 flex h-32 w-32 items-center justify-center">
+          <div className="absolute inset-0 rounded-full bg-primary/10" />
+          <span className="text-6xl" aria-hidden>🚀</span>
+          {/* Little stars */}
+          <span className="absolute top-2 right-4 text-xl" aria-hidden>✨</span>
+          <span className="absolute bottom-3 left-2 text-lg" aria-hidden>⭐</span>
+        </div>
+        <p className="text-xs font-bold uppercase tracking-[0.25em] text-accent">Lost in space</p>
+        <h1 className="mt-3 font-display text-3xl font-bold text-foreground">
+          This machine drifted off the map
+        </h1>
+        <p className="mt-3 text-muted-foreground">
+          The page you're looking for floated away into deep space.
+          Let's get you back on course!
         </p>
-        <div className="mt-6">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
           >
-            Go home
+            🏠 Home base
+          </Link>
+          <Link
+            to="/map"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-bold text-foreground hover:bg-muted transition-colors"
+          >
+            <Map className="h-4 w-4" aria-hidden /> Mission map
           </Link>
         </div>
       </div>
@@ -49,33 +68,14 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   }, [error]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Try again
-          </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Go home
-          </a>
-        </div>
-      </div>
-    </div>
+    <GlobalErrorScreen
+      title="Something went wrong in mission control! 🛸"
+      body="Our engineers have been notified. Try again or head back to the home base."
+      onRetry={() => {
+        router.invalidate();
+        reset();
+      }}
+    />
   );
 }
 

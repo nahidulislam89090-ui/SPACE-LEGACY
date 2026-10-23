@@ -5,6 +5,7 @@ import { getHardware, hardware, zoneLabels } from "@/content/hardware";
 import { ReadAloud, Rich, StatusBadge } from "@/components/space/bits";
 import { Quiz } from "@/components/space/Quiz";
 import { useProgress } from "@/lib/progress";
+import { ImgWithFallback } from "@/components/space/states";
 
 export const Route = createFileRoute("/hardware/$slug")({
   loader: ({ params }) => {
@@ -31,9 +32,35 @@ export const Route = createFileRoute("/hardware/$slug")({
 
 function MissingMachine() {
   return (
-    <div className="mx-auto max-w-xl px-4 py-24 text-center">
-      <h1 className="text-3xl font-semibold">We couldn't find that machine</h1>
-      <Link to="/map" className="mt-6 inline-block font-bold text-primary underline">Back to the map</Link>
+    <div className="flex min-h-[70vh] items-center justify-center px-4">
+      <div className="mx-auto max-w-md text-center animate-rise">
+        <div className="relative mx-auto mb-6 flex h-28 w-28 items-center justify-center">
+          <div className="absolute inset-0 rounded-full bg-primary/10" />
+          <span className="text-5xl" aria-hidden>🛰️</span>
+          <span className="absolute top-2 right-3 text-lg" aria-hidden>✨</span>
+        </div>
+        <p className="text-xs font-bold uppercase tracking-[0.25em] text-accent">Signal lost</p>
+        <h1 className="mt-3 font-display text-2xl font-bold">
+          We couldn't find that machine
+        </h1>
+        <p className="mt-2 text-muted-foreground">
+          It may have drifted off the map. Try heading back to the Mission Map.
+        </p>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            to="/map"
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            Back to the map
+          </Link>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-bold text-foreground hover:bg-muted transition-colors"
+          >
+            🏠 Home
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
@@ -76,7 +103,14 @@ function Profile() {
       <Link to="/map" className="inline-flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Back to the map</Link>
 
       <div className="mt-6 overflow-hidden rounded-3xl border bg-card animate-rise">
-        <img src={item.image} alt={item.imageAlt} width={1200} height={800} className="aspect-[2/1] w-full object-cover" />
+        <ImgWithFallback
+          src={item.image}
+          alt={item.imageAlt}
+          fallbackLabel={item.name}
+          width={1200}
+          height={800}
+          className="aspect-[2/1] w-full object-cover"
+        />
         <div className="p-6 sm:p-8">
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={item.status} />
@@ -125,10 +159,12 @@ function Profile() {
           Fact source: <a href={item.source.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 underline">{item.source.label} <ExternalLink className="h-3 w-3" /></a>
         </p>
 
-        <Link to="/hardware/$slug" params={{ slug: next.slug }} className="block rounded-3xl border bg-card p-6 text-right hover:border-primary">
-          <span className="text-sm text-muted-foreground">Next machine</span>
-          <span className="block font-display text-2xl font-semibold">{next.name} →</span>
-        </Link>
+        {next && (
+          <Link to="/hardware/$slug" params={{ slug: next.slug }} className="block rounded-3xl border bg-card p-6 text-right hover:border-primary">
+            <span className="text-sm text-muted-foreground">Next machine</span>
+            <span className="block font-display text-2xl font-semibold">{next.name} →</span>
+          </Link>
+        )}
       </div>
     </article>
   );

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import { ErrorBanner } from "@/components/space/states";
 
 export const Route = createFileRoute("/login")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -23,6 +24,41 @@ export const Route = createFileRoute("/login")({
 });
 
 type Mode = "sign-in" | "sign-up";
+
+/** Translates raw auth error strings into friendly plain language for ages 8–14. */
+function translateAuthError(raw: string, mode: Mode): string {
+  const lower = raw.toLowerCase();
+  // Wrong password
+  if (lower.includes("incorrect password") || lower.includes("invalid login") || lower.includes("invalid credentials") || lower.includes("wrong password")) {
+    return "That password didn't match. Double-check and try again!";
+  }
+  // Email already used
+  if (lower.includes("already exists") || lower.includes("already registered") || lower.includes("user already") || lower.includes("email already")) {
+    return "That email is already used by another explorer. Try logging in instead, or use a different email.";
+  }
+  // No account found
+  if (lower.includes("no explorer account") || lower.includes("user not found") || lower.includes("invalid email")) {
+    return "We couldn't find an account with that email. Check your spelling, or create a free account below!";
+  }
+  // Email not confirmed
+  if (lower.includes("email not confirmed")) {
+    return "You need to confirm your email first. Check your inbox for a link from us!";
+  }
+  // Network / timeout
+  if (lower.includes("timeout") || lower.includes("network") || lower.includes("fetch") || lower.includes("unreachable")) {
+    return "We couldn't reach the server right now — check your internet connection and try again.";
+  }
+  // Password too short
+  if (lower.includes("at least 6") || lower.includes("password must")) {
+    return raw; // already friendly
+  }
+  // Passwords don't match
+  if (lower.includes("do not match")) {
+    return raw;
+  }
+  // Fallback
+  return raw || "Something went wrong. Please try again!";
+}
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -129,7 +165,7 @@ function LoginPage() {
       if (mode === "sign-in") {
         const res = await signIn({ email, password });
         if (!res.success) {
-          setError(res.error || "Unable to log in. Please check your credentials.");
+          setError(translateAuthError(res.error || "Unable to log in. Please check your credentials.", mode));
           return;
         }
         toast.success(
@@ -141,7 +177,7 @@ function LoginPage() {
       } else {
         const res = await signUp({ email, password });
         if (!res.success) {
-          setError(res.error || "Unable to create account. Please try again.");
+          setError(translateAuthError(res.error || "Unable to create account. Please try again.", mode));
           return;
         }
         if (res.needsEmailConfirmation) {
@@ -167,7 +203,11 @@ function LoginPage() {
       if (res.success) {
         toast.success("Exploring as guest 🚀 Badges saved on this device.");
         navigate({ to: "/" as any, replace: true });
+      } else {
+        setError("Couldn't set up guest mode. Please check your internet and try again.");
       }
+    } catch {
+      setError("Something went wrong connecting. Check your internet and try again.");
     } finally {
       setGuestLoading(false);
     }
@@ -316,15 +356,7 @@ function LoginPage() {
               )}
 
               {/* Error */}
-              {error && (
-                <p
-                  role="alert"
-                  aria-live="polite"
-                  className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-2.5 text-sm font-medium text-destructive"
-                >
-                  {error}
-                </p>
-              )}
+              {error && <ErrorBanner message={error} />}
 
               {/* Info (e.g. email confirmation) */}
               {info && (

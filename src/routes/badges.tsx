@@ -18,6 +18,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { BadgeGridSkeleton, SpinnerOverlay } from "@/components/space/states";
 
 export const Route = createFileRoute("/badges")({
   head: () => ({
@@ -122,10 +123,18 @@ function Certificate({ name }: { name: string }) {
 // ─── Page ────────────────────────────────────────────────────────────────────
 function BadgesPage() {
   const { badges, explorerLevel: level, displayName, setDisplayName, resetProgress, scores } = useProgress();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [certName, setCertName] = useState(displayName);
   const [showCert, setShowCert] = useState(false);
   const certRef = useRef<HTMLDivElement>(null);
+
+  if (authLoading) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-10">
+        <SpinnerOverlay label="Loading your badges…" />
+      </div>
+    );
+  }
 
   const totalBadges = BADGE_DEFS.length;
   const earnedCount = badges.size;
@@ -207,11 +216,15 @@ function BadgesPage() {
       {/* Trophy shelf */}
       <section aria-labelledby="badge-shelf-title" className="mt-10">
         <h2 id="badge-shelf-title" className="mb-6 font-display text-2xl font-semibold">Trophy Shelf</h2>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {BADGE_DEFS.map((def) => (
-            <BadgeCard key={def.id} id={def.id} earned={badges.has(def.id)} />
-          ))}
-        </div>
+        {BADGE_DEFS.length === 0 ? (
+          <BadgeGridSkeleton count={9} />
+        ) : (
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {BADGE_DEFS.map((def) => (
+              <BadgeCard key={def.id} id={def.id} earned={badges.has(def.id)} />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* How to earn badges */}
