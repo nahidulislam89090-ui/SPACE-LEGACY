@@ -1,6 +1,6 @@
-import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
-import { Mail, Lock, Rocket, Info, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Rocket, Eye, EyeOff, Loader2, Info, CheckCircle2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,17 +27,24 @@ type Mode = "sign-in" | "sign-up";
 function LoginPage() {
   const navigate = useNavigate();
   const { redirect: redirectTo, message: redirectMessage } = useSearch({ from: "/login" });
-  const { user, signIn, signUp } = useAuth();
+  const { user, signIn, signUp, quickGuestLogin, signOut } = useAuth();
   const [mode, setMode] = useState<Mode>("sign-in");
+
+  // Form fields
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // UI state
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
+  const [guestLoading, setGuestLoading] = useState(false);
 
-
-  const { signOut } = useAuth();
-
+  // ─── Already logged in ──────────────────────────────────────────────────────
   if (user) {
     const target = redirectTo && redirectTo !== "/login" ? redirectTo : "/profile";
     const displayName =
@@ -45,7 +52,7 @@ function LoginPage() {
 
     return (
       <div className="flex min-h-[80vh] items-center justify-center px-4 py-16">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-sm">
           <div className="rounded-3xl border bg-card p-8 shadow-xl animate-rise text-center">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 text-3xl">
               🚀
@@ -79,21 +86,24 @@ function LoginPage() {
                 Log out
               </Button>
             </div>
-
-            <div className="mt-6 border-t border-border pt-4">
-              <Link
-                to="/"
-                className="inline-block text-sm font-bold text-muted-foreground underline hover:text-foreground"
-              >
-                Continue as guest →
-              </Link>
-            </div>
           </div>
         </div>
       </div>
     );
   }
 
+  // ─── Helpers ────────────────────────────────────────────────────────────────
+  const switchMode = (next: Mode) => {
+    setMode(next);
+    setError("");
+    setInfo("");
+    setName("");
+    setConfirmPassword("");
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+  };
+
+  // ─── Submit ─────────────────────────────────────────────────────────────────
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -103,14 +113,16 @@ function LoginPage() {
       setError("Please enter both email and password.");
       return;
     }
-
     if (password.length < 6) {
       setError("Password must be at least 6 characters.");
       return;
     }
+    if (mode === "sign-up" && password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
 
     setLoading(true);
-
     try {
       const target = redirectTo && redirectTo !== "/login" ? redirectTo : "/profile";
 
@@ -132,7 +144,6 @@ function LoginPage() {
           setError(res.error || "Unable to create account. Please try again.");
           return;
         }
-
         if (res.needsEmailConfirmation) {
           setInfo(
             "Confirmation link sent! Please check your inbox and verify your email, then return here to log in."
@@ -140,7 +151,6 @@ function LoginPage() {
           setMode("sign-in");
           return;
         }
-
         toast.success("Welcome, explorer! 🚀 Your account is ready.");
         navigate({ to: target as any, replace: true });
       }
@@ -149,136 +159,264 @@ function LoginPage() {
     }
   };
 
+  // ─── Continue as guest ──────────────────────────────────────────────────────
+  const handleGuest = async () => {
+    setGuestLoading(true);
+    try {
+      const res = await quickGuestLogin();
+      if (res.success) {
+        toast.success("Exploring as guest 🚀 Badges saved on this device.");
+        navigate({ to: "/" as any, replace: true });
+      }
+    } finally {
+      setGuestLoading(false);
+    }
+  };
+
+  // ─── Render ─────────────────────────────────────────────────────────────────
+  const isSignUp = mode === "sign-up";
+
   return (
-    <div className="flex min-h-[80vh] items-center justify-center px-4 py-16">
-      <div className="w-full max-w-md">
+    <div className="flex min-h-[80vh] items-center justify-center px-4 py-12">
+      <div className="w-full max-w-sm">
+
+        {/* Redirect message banner */}
+        {redirectMessage && (
+          <div className="mb-4 flex items-center gap-2 rounded-xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm font-bold text-primary">
+            <Info className="h-4 w-4 shrink-0" aria-hidden />
+            {redirectMessage}
+          </div>
+        )}
+
         {/* Card */}
-        <div className="rounded-3xl border bg-card p-8 shadow-xl animate-rise">
-          {/* Redirect message */}
-          {redirectMessage && (
-            <div className="mb-5 flex items-center gap-2 rounded-xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm font-bold text-primary">
-              <Info className="h-4 w-4 shrink-0" aria-hidden />
-              {redirectMessage}
+        <div className="rounded-3xl border bg-card shadow-xl animate-rise overflow-hidden">
+          <div className="p-8 pb-6">
+
+            {/* Header */}
+            <div className="flex flex-col items-center text-center gap-3 mb-7">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/15">
+                <Rocket className="h-7 w-7 text-primary" aria-hidden />
+              </div>
+              <div>
+                <h1 className="font-display font-bold text-2xl leading-tight">
+                  {isSignUp ? "Join SPACE LEGACY" : "Welcome back, Explorer"}
+                </h1>
+                <p className="mt-1.5 text-sm text-muted-foreground">
+                  {isSignUp
+                    ? "Create a free account to save your badges and progress."
+                    : "Log in to access your badges and certificate."}
+                </p>
+              </div>
             </div>
-          )}
 
-          {/* Icon */}
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15">
-            <Rocket className="h-8 w-8 text-primary" aria-hidden />
-          </div>
+            {/* Form */}
+            <form
+              id="auth-form"
+              onSubmit={submit}
+              className="space-y-4"
+              noValidate
+              aria-label={isSignUp ? "Create account form" : "Sign in form"}
+            >
+              {/* Name (sign-up only) */}
+              {isSignUp && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    name="name"
+                    autoComplete="name"
+                    inputMode="text"
+                    placeholder="Your explorer name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="h-12 text-base"
+                    aria-label="Your name"
+                  />
+                </div>
+              )}
 
-          <div className="mt-5 text-center">
-            <h1 className="font-display font-bold" style={{ fontSize: "clamp(1.5rem, 6vw, 1.875rem)" }}>
-              {mode === "sign-in" ? "Welcome back, Explorer!" : "Join SPACE LEGACY"}
-            </h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {mode === "sign-in"
-                ? "Log in to access your badges, quiz progress, and certificate."
-                : "Create an account to save your explorer progress and achievements."}
-            </p>
-          </div>
-
-          <form onSubmit={submit} className="mt-6 space-y-4" noValidate>
-            <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+              {/* Email */}
+              <div className="space-y-1.5">
+                <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
+                  name="email"
                   autoComplete="email"
+                  inputMode="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="pl-9"
                   aria-required="true"
+                  className="h-12 text-base"
                 />
               </div>
-            </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete={mode === "sign-up" ? "new-password" : "current-password"}
-                  placeholder={mode === "sign-up" ? "At least 6 characters" : "Your password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="pl-9"
-                  aria-required="true"
-                />
+              {/* Password */}
+              <div className="space-y-1.5">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    autoComplete={isSignUp ? "new-password" : "current-password"}
+                    placeholder={isSignUp ? "At least 6 characters" : "Your password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    aria-required="true"
+                    className="h-12 text-base pr-11"
+                  />
+                  <button
+                    type="button"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded p-0.5"
+                  >
+                    {showPassword
+                      ? <EyeOff className="h-4 w-4" aria-hidden />
+                      : <Eye className="h-4 w-4" aria-hidden />}
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {error && (
-              <p role="alert" className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-2 text-sm font-bold text-destructive">
-                {error}
-              </p>
-            )}
+              {/* Confirm password (sign-up only) */}
+              {isSignUp && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="confirm-password">Confirm password</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirm-password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirm-password"
+                      autoComplete="new-password"
+                      placeholder="Repeat your password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      aria-required="true"
+                      className="h-12 text-base pr-11"
+                    />
+                    <button
+                      type="button"
+                      aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                      onClick={() => setShowConfirmPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded p-0.5"
+                    >
+                      {showConfirmPassword
+                        ? <EyeOff className="h-4 w-4" aria-hidden />
+                        : <Eye className="h-4 w-4" aria-hidden />}
+                    </button>
+                  </div>
+                </div>
+              )}
 
-            {info && (
-              <div role="status" className="rounded-xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm font-medium text-primary flex items-start gap-2">
-                <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
-                <span>{info}</span>
-              </div>
-            )}
-
-            <Button type="submit" className="w-full font-bold" disabled={loading} aria-busy={loading}>
-              {loading ? "Please wait…" : mode === "sign-in" ? "Log in" : "Create account"}
-            </Button>
-          </form>
-
-          {/* Mode switcher */}
-          <p className="mt-5 text-center text-sm text-muted-foreground">
-            {mode === "sign-in" ? (
-              <>
-                No account yet?{" "}
-                <button
-                  type="button"
-                  onClick={() => { setMode("sign-up"); setError(""); setInfo(""); }}
-                  className="font-bold text-primary underline hover:text-primary/80"
+              {/* Error */}
+              {error && (
+                <p
+                  role="alert"
+                  aria-live="polite"
+                  className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-2.5 text-sm font-medium text-destructive"
                 >
-                  Create one for free
-                </button>
-              </>
-            ) : (
-              <>
-                Already have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => { setMode("sign-in"); setError(""); setInfo(""); }}
-                  className="font-bold text-primary underline hover:text-primary/80"
+                  {error}
+                </p>
+              )}
+
+              {/* Info (e.g. email confirmation) */}
+              {info && (
+                <div
+                  role="status"
+                  aria-live="polite"
+                  className="rounded-xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm font-medium text-primary flex items-start gap-2"
                 >
-                  Log in
-                </button>
-              </>
-            )}
-          </p>
+                  <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" aria-hidden />
+                  <span>{info}</span>
+                </div>
+              )}
 
-          {/* Storage & Privacy badge */}
-          <div className="mt-6 flex items-center justify-center gap-1.5 text-xs text-muted-foreground/80">
-            <ShieldCheck className="h-3.5 w-3.5 text-status-active" />
-            <span>Encrypted local session with cloud synchronization</span>
-          </div>
+              {/* Submit */}
+              <Button
+                type="submit"
+                className="w-full h-12 text-base font-bold"
+                disabled={loading}
+                aria-busy={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                    Please wait…
+                  </>
+                ) : isSignUp ? (
+                  "Create account"
+                ) : (
+                  "Log in"
+                )}
+              </Button>
+            </form>
 
-          {/* Guest option */}
-          <div className="mt-4 border-t border-border pt-4 text-center">
-            <p className="text-xs text-muted-foreground">
-              You can explore everything without an account. Badges will be saved on this device only.
+            {/* Mode switcher */}
+            <p className="mt-5 text-center text-sm text-muted-foreground">
+              {isSignUp ? (
+                <>
+                  Already have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={() => switchMode("sign-in")}
+                    className="font-bold text-primary underline hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+                  >
+                    Log in
+                  </button>
+                </>
+              ) : (
+                <>
+                  No account yet?{" "}
+                  <button
+                    type="button"
+                    onClick={() => switchMode("sign-up")}
+                    className="font-bold text-primary underline hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+                  >
+                    Create one for free
+                  </button>
+                </>
+              )}
             </p>
-            <Link
-              to="/"
-              className="mt-2 inline-block text-sm font-bold text-muted-foreground underline hover:text-foreground"
-            >
-              Continue as a guest →
-            </Link>
           </div>
+
+          {/* Guest section — clear secondary button, not a tiny link */}
+          <div className="border-t border-border bg-muted/30 px-8 py-5 flex flex-col items-center gap-3 text-center">
+            <p className="text-xs text-muted-foreground leading-snug">
+              You can explore everything without an account.
+              <br />
+              Badges will be saved on this device only.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full h-11 font-semibold"
+              onClick={handleGuest}
+              disabled={guestLoading}
+              aria-busy={guestLoading}
+            >
+              {guestLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                  Setting up…
+                </>
+              ) : (
+                "Continue as a guest"
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* Privacy note */}
+        <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground/70">
+          <ShieldCheck className="h-3.5 w-3.5 text-status-active" aria-hidden />
+          <span>Encrypted local session with cloud synchronization</span>
         </div>
       </div>
     </div>
